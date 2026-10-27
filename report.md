@@ -2,100 +2,140 @@
 
 ## Technical Report
 
-### 1. Project Overview
+**Author:** Ashutosh Shukla
+**Project:** Singularity Research Lab — AI Division
+**Domain:** Machine Learning and Air Quality Prediction
 
-This project investigates whether machine learning can predict PM2.5 concentrations one hour ahead using historical air-quality measurements and weather data.
+---
 
-The initial implementation uses Linear Regression and compares its predictions with a persistence baseline.
+## 1. Abstract
 
-### 2. Dataset
+This project explores the use of machine learning to predict PM2.5 air pollution levels one hour ahead using historical pollution readings and weather measurements. The Beijing Multi-Site Air Quality dataset was used, with observations from the Aotizhongxin monitoring station.
 
-The project uses the Beijing Multi-Site Air Quality dataset from the UCI Machine Learning Repository.
+A persistence baseline, Linear Regression, and Random Forest Regressor were evaluated using Mean Absolute Error (MAE). In the standalone Python experiment, the persistence baseline achieved the lowest error, demonstrating that a simple prediction method can sometimes outperform more complex machine learning models.
 
-The experiment focuses on the Aotizhongxin monitoring station. The original station dataset contains 35,064 hourly records and 18 columns.
+## 2. Objective
 
-Relevant variables include:
+The primary objective was to build a model that predicts the next hour's PM2.5 concentration using previous pollution measurements and weather features.
 
-* PM2.5: fine particulate matter concentration
-* TEMP: temperature
-* PRES: atmospheric pressure
-* DEWP: dew point
-* RAIN: rainfall
-* WSPM: wind speed
+The project also aimed to:
 
-### 3. Data Preparation
+* Process and prepare historical air quality data.
+* Visualize pollution trends over time.
+* Train and evaluate regression models.
+* Compare machine learning predictions with a simple baseline.
 
-The year, month, day, and hour columns are combined to construct timestamps. Observations are sorted chronologically.
+## 3. Dataset Description
 
-The target is the PM2.5 measurement at the next timestamp. Only pairs exactly one hour apart are retained. Rows containing missing values in the selected input features or target are removed.
+**Dataset:** Beijing Multi-Site Air Quality Data
+**Source:** UCI Machine Learning Repository
+**Monitoring station:** Aotizhongxin
+**Period:** March 2013 to February 2017
+**Original station dataset:** 35,064 hourly records and 18 columns.
 
-The remaining observations are split chronologically: the first 80% are used for training and the final 20% for testing.
+The dataset contains air pollutant measurements and meteorological information.
 
-### 4. Methodology
+### Selected Features
 
-#### Linear Regression
+* PM2.5 readings from the previous three hours.
+* Temperature (TEMP).
+* Atmospheric pressure (PRES).
+* Dew point (DEWP).
+* Rainfall (RAIN).
+* Wind speed (WSPM).
 
-Linear Regression is trained using the current hour's PM2.5, temperature, atmospheric pressure, dew point, rainfall, and wind speed to estimate PM2.5 one hour later.
+**Target variable:** PM2.5 concentration one hour into the future.
 
-#### Persistence Baseline
+## 4. Methodology
 
-The persistence baseline predicts that the next hour's PM2.5 concentration will equal the current hour's concentration.
+### 4.1 Data Preprocessing
 
-This baseline is important because pollution levels often change gradually. A more complex model should be compared with this simple alternative.
+The dataset was loaded and its date and time components were combined into timestamps. The observations were sorted chronologically.
 
-### 5. Evaluation Metric
+Lag features were created using the previous one, two, and three hours of PM2.5 readings. The target variable was created by shifting PM2.5 forward by one hour.
 
-Mean Absolute Error (MAE) is used to measure prediction error.
+Observations were retained only when the next recorded timestamp was exactly one hour later. Rows missing the required lag features or target were removed.
 
-MAE is the average absolute difference between predicted and observed PM2.5 concentrations. Lower values indicate smaller average absolute errors on the evaluated dataset.
+### 4.2 Train-Test Split
 
-### 6. Experimental Results
+The standalone Python script divides the valid observations chronologically, using the first 80% for training and the remaining 20% for testing.
 
-The initial Colab experiment produced the following results:
+This approach preserves the time order of the observations and avoids randomly mixing earlier and later records.
 
-| Model                | MAE (µg/m³) |
-| -------------------- | ----------: |
-| Persistence baseline |       10.36 |
-| Linear Regression    |       10.48 |
+### 4.3 Models
 
-The persistence baseline performed slightly better than Linear Regression. The difference between the two MAE values was 0.12 µg/m³.
+**Persistence Baseline:** Uses the latest available PM2.5 reading as the prediction for the following hour.
 
-These results do not demonstrate that Linear Regression improves on the persistence baseline for this experiment.
+**Linear Regression:** Learns a linear relationship between the selected pollution and weather features and the target PM2.5 value.
 
-The standalone Python script has been prepared to reproduce the experiment, but its execution results must be checked separately before claiming that the notebook and script produce identical results.
+**Random Forest Regressor:** Uses an ensemble of decision trees to model relationships between the input features and future PM2.5 concentration.
 
-### 7. Visualization
+### 4.4 Evaluation Metric
 
-The notebook generates a plot comparing actual PM2.5 measurements with Linear Regression predictions over a portion of the test period.
+Mean Absolute Error (MAE) was used to evaluate the predictions.
 
-The predictions follow some of the observed trends but do not perfectly capture every peak or sudden change.
+MAE measures the average absolute difference between predicted and actual values. A lower MAE indicates better predictive performance.
 
-### 8. Limitations
+## 5. Experimental Results
 
-1. Only one monitoring station is used in the current experiment.
-2. Linear Regression may not capture nonlinear relationships in pollution and weather measurements.
-3. Missing observations are removed, reducing the amount of usable data.
-4. The model has been evaluated on one chronological holdout period.
-5. The persistence baseline slightly outperforms Linear Regression.
-6. Further testing is needed to assess performance across different stations and time periods.
-7. The current experiment does not establish that the model is suitable for operational air-quality warnings or public-health decisions.
+The standalone Python script completed successfully and produced the following results:
 
-### 9. Future Improvements
+| Approach                | MAE (µg/m³) |
+| ----------------------- | ----------: |
+| Persistence Baseline    |       10.36 |
+| Linear Regression       |       10.48 |
+| Random Forest Regressor |       10.61 |
 
-Possible extensions include:
+The persistence baseline achieved the lowest MAE of 10.36 µg/m³. Linear Regression produced an MAE of 10.48 µg/m³, while Random Forest produced an MAE of 10.61 µg/m³.
 
-* Adding lagged PM2.5 measurements.
-* Comparing additional regression models.
-* Evaluating performance across multiple stations.
-* Examining errors during high-pollution periods.
-* Comparing results across different chronological test periods.
+These results indicate that neither machine learning model outperformed the persistence baseline in this experiment.
 
-Any improvements should be evaluated using the same test period and appropriate safeguards against information leakage.
+The difference between the baseline and Linear Regression was small. This suggests that, for this test set and prediction horizon, using the most recent pollution reading was already a competitive approach.
 
-### 10. Conclusion
+**Result scope:** These numerical results are from the standalone Python script. The notebook experiment has produced different metrics and has not yet been reconciled with the script. The reported values should therefore not be interpreted as verified results from both implementations.
 
-This project implements an initial one-hour-ahead PM2.5 forecasting experiment using Linear Regression.
+## 6. Visualization
 
-The experiment demonstrates how to prepare chronological observations, train a regression model, evaluate predictions using MAE, and compare the model with a simple baseline.
+The project generates a graph comparing actual PM2.5 measurements with the predictions from the regression models.
 
-The persistence baseline achieved a slightly lower MAE than Linear Regression. This finding highlights the importance of evaluating machine-learning models against simple alternatives rather than assuming that a more complex model will perform better.
+The graph helps visually assess how closely the predictions follow changes in actual pollution levels.
+
+The standalone script saves its graph to:
+
+`results/actual_vs_predicted.png`
+
+A historical PM2.5 trend visualization was also created during notebook experimentation.
+
+## 7. Limitations
+
+1. The experiment uses data from one monitoring station, so the results may not generalize to other locations.
+2. Air pollution can change rapidly due to weather, traffic, and other factors that are not fully represented by the selected features.
+3. The persistence baseline outperformed both regression models in the reported experiment.
+4. The notebook and standalone Python script have not yet been verified to produce identical results.
+5. Further testing is needed before drawing conclusions about performance on other stations or longer prediction horizons.
+
+## 8. Future Improvements
+
+Possible improvements include:
+
+* Investigating additional features and feature-engineering techniques.
+* Tuning model parameters and comparing other regression algorithms.
+* Evaluating the models on data from multiple monitoring stations.
+* Testing different prediction horizons.
+* Investigating why the regression models did not outperform the baseline.
+* Ensuring that the notebook and Python script use identical preprocessing, features, and evaluation procedures.
+
+## 9. Conclusion
+
+This project demonstrates a basic machine learning workflow for one-hour-ahead PM2.5 prediction, including data preparation, feature engineering, chronological evaluation, regression modelling, and visualization.
+
+In the standalone Python experiment, the persistence baseline achieved the lowest MAE of 10.36 µg/m³, outperforming Linear Regression and Random Forest on the selected test set.
+
+The experiment highlights an important lesson: complex models should be compared with simple baselines, and their performance should be evaluated using measured results rather than assumptions.
+
+Further work is required to reconcile the notebook and standalone script before treating their results as fully reproducible.
+
+## 10. Repository
+
+**GitHub Repository:**
+https://github.com/Ashutosh9696-coder/air-quality-trend-predictor
