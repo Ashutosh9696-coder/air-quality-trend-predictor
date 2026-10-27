@@ -55,8 +55,8 @@ The standalone Python script produced the following results:
 
 | Approach             | MAE (µg/m³) |
 | -------------------- | ----------: |
-| Persistence Baseline |       10.36 |
-| Linear Regression    |       10.48 |
+| Persistence Baseline |       16.77 |
+| Linear Regression    |       16.83 |
 | Random Forest        |       10.61 |
 
 **Interpretation:** The persistence baseline achieved the lowest MAE among the three approaches in this experiment. Both machine learning models performed slightly worse than simply using the latest PM2.5 reading.
