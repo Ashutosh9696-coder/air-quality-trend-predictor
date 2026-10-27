@@ -14,10 +14,7 @@ DATA_URL = (
 "PRSA2017_Data_20130301-20170228.zip"
 )
 
-STATION_FILE = (
-"PRSA_Data_"
-"Aotizhongxin_20130301-20170228.csv"
-)
+STATION_FILE = "PRSA_Data_Aotizhongxin_20130301-20170228.csv"
 
 FEATURES = ["PM2.5", "TEMP", "PRES", "DEWP", "RAIN", "WSPM"]
 
@@ -37,7 +34,7 @@ with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
 
     if not matches:
         raise FileNotFoundError(
-            f"Could not find {STATION_FILE} in the downloaded archive."
+            f"Could not find {STATION_FILE} in the archive."
         )
 
     with archive.open(matches[0]) as file:
@@ -48,7 +45,7 @@ return df
 ```
 
 def prepare_data(df):
-"""Create chronological one-hour-ahead forecasting observations."""
+"""Prepare chronological one-hour-ahead forecasting observations."""
 data = df.copy()
 
 ```
@@ -57,24 +54,20 @@ data["datetime"] = pd.to_datetime(
 )
 
 data = data.sort_values("datetime").set_index("datetime")
-
-# Target is PM2.5 in the next row.
 data["target"] = data["PM2.5"].shift(-1)
 
-# Keep only pairs exactly one hour apart.
 next_time = pd.Series(data.index, index=data.index).shift(-1)
 
 hourly = data[
     next_time - data.index == pd.Timedelta(hours=1)
 ].copy()
 
-# Drop rows with missing inputs or target; do not interpolate.
 model_data = hourly[FEATURES + ["target"]].dropna()
 
-if len(model_data) < 10:
-    raise ValueError("Not enough valid observations to train the model.")
-
 split = int(len(model_data) * 0.8)
+
+if split == 0 or split == len(model_data):
+    raise ValueError("Not enough data for training and testing.")
 
 train = model_data.iloc[:split]
 test = model_data.iloc[split:]
@@ -93,14 +86,12 @@ y_train = train["target"]
 X_test = test[FEATURES]
 y_test = test["target"]
 
-# Train Linear Regression.
 model = LinearRegression()
 model.fit(X_train, y_train)
-predictions = model.predict(X_test)
 
+predictions = model.predict(X_test)
 model_mae = mean_absolute_error(y_test, predictions)
 
-# Persistence baseline: next hour equals current hour.
 baseline_predictions = X_test["PM2.5"].to_numpy()
 baseline_mae = mean_absolute_error(y_test, baseline_predictions)
 
@@ -117,7 +108,6 @@ if model_mae < baseline_mae:
 else:
     print("The persistence baseline performed as well as or better.")
 
-# Save an actual-versus-predicted plot.
 output_dir = Path("results")
 output_dir.mkdir(exist_ok=True)
 
