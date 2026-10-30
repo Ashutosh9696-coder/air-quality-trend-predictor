@@ -1,129 +1,38 @@
-# Air Quality Trend Predictor 🌫️
+## Model Evaluation and Results
 
-A machine learning project that predicts PM2.5 air pollution levels one hour ahead using historical pollution readings and weather measurements.
+The model was evaluated using a **chronological 80:20 train-test split** to preserve the time-based order of observations and avoid using future data during training.
 
-## 🎯 Objective
+The experiment used 28,048 training samples and 7,012 testing samples.
 
-The objective of this project is to explore whether machine learning models can predict short-term changes in air pollution using historical air quality data.
+### Performance Comparison
 
-## 📊 Dataset
+Two approaches were evaluated:
 
-**Dataset:** Beijing Multi-Site Air Quality Data
+1. **Persistence Baseline:** Uses the most recent PM2.5 reading as the prediction for the next hour.
+2. **Linear Regression:** Uses historical PM2.5 readings (three lag features) along with meteorological measurements to predict the next PM2.5 concentration.
 
-**Source:** UCI Machine Learning Repository
+The evaluation was performed using Mean Absolute Error (MAE).
 
-**Station used:** Aotizhongxin
-
-**Period:** March 2013 – February 2017
-
-The dataset contains hourly air pollution readings and weather measurements.
-
-### Features Used
-
-* PM2.5 readings from the previous three hours
-* Temperature (TEMP)
-* Atmospheric pressure (PRES)
-* Dew point (DEWP)
-* Rainfall (RAIN)
-* Wind speed (WSPM)
-
-**Target:** PM2.5 concentration one hour into the future.
-
-## ⚙️ Methodology
-
-1. Download and load the dataset.
-2. Convert date and time columns into timestamps.
-3. Sort observations chronologically.
-4. Create lag features from previous PM2.5 readings.
-5. Remove observations with missing required historical readings or targets.
-6. Keep consecutive hourly observations.
-7. Split the data chronologically into training and testing sets.
-8. Train regression models and evaluate their predictions using Mean Absolute Error (MAE).
-9. Visualize actual and predicted PM2.5 values.
-
-## 🤖 Models Evaluated
-
-Three approaches were evaluated:
-
-* **Persistence Baseline:** Uses the latest PM2.5 reading as the prediction for the next hour.
-* **Linear Regression:** Models the relationship between historical pollution readings, weather measurements, and future PM2.5.
-* **Random Forest Regressor:** Uses an ensemble of decision trees to model potentially nonlinear relationships.
-
-## 📈 Experimental Results
-
-The standalone Python script produced the following results:
-
-| Approach             | MAE (µg/m³) |
+| Model                | MAE (µg/m³) |
 | -------------------- | ----------: |
 | Persistence Baseline |       16.77 |
 | Linear Regression    |       16.83 |
-| Random Forest        |       10.61 |
 
-**Interpretation:** The persistence baseline achieved the lowest MAE among the three approaches in this experiment. Both machine learning models performed slightly worse than simply using the latest PM2.5 reading.
+### Key Findings
 
-This result highlights the importance of comparing machine learning models against simple baselines rather than assuming that a more complex model will perform better.
+* The Persistence Baseline achieved an MAE of **16.77 µg/m³**.
+* Linear Regression achieved an MAE of **16.83 µg/m³**.
+* The baseline performed slightly better, with a difference of just **0.06 µg/m³**.
+* Adding historical and weather-related features did not produce an improvement over the simple baseline in this experiment.
 
-*Note: These results are from the standalone Python script. The notebook experiment has not yet been verified to produce identical results.*
+### Actual vs Predicted
 
-## 📉 Visualization
+The project generates a visualization comparing actual PM2.5 concentrations with Linear Regression predictions on the test dataset.
 
-The project generates a graph comparing actual PM2.5 measurements with model predictions.
+This helps assess how closely the model follows changes in pollution levels over time.
 
-Output file:
+### Interpretation
 
-`results/actual_vs_predicted.png`
+An important observation from this experiment is that a machine learning model does not necessarily outperform a simple forecasting baseline.
 
-## 🛠️ Technologies Used
-
-* Python
-* Pandas
-* Matplotlib
-* Scikit-learn
-* Requests
-
-## 🚀 How to Run
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/Ashutosh9696-coder/air-quality-trend-predictor.git
-cd air-quality-trend-predictor
-```
-
-### 2. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run the project
-
-```bash
-python air_quality_predictor.py
-```
-
-The script downloads the dataset, trains the models, prints evaluation metrics, and generates the prediction graph.
-
-An internet connection is required to download the dataset.
-
-## ⚠️ Limitations
-
-* The project uses data from a single monitoring station.
-* Prediction accuracy may vary with changing pollution patterns and weather conditions.
-* The persistence baseline outperformed both machine learning models in the reported experiment.
-* The current results do not establish how well the model generalizes to other stations or cities.
-* The notebook and standalone script still need to be checked for consistency.
-
-## 🔮 Future Improvements
-
-* Compare additional regression models.
-* Investigate feature engineering and model parameters.
-* Evaluate performance across different monitoring stations.
-* Explore longer prediction horizons.
-* Investigate why the machine learning models do not outperform the persistence baseline.
-
-## 👨‍💻 Author
-
-Ashutosh Shukla
-
-GitHub: [Ashutosh9696-coder](https://github.com/Ashutosh9696-coder)
+Although Linear Regression was implemented using historical pollution and weather features, it did not achieve a lower MAE than the persistence approach. This provides a useful starting point for future improvements, such as feature engineering, alternative regression models, and further evaluation across monitoring stations.
