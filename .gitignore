@@ -1,1 +1,14 @@
+# Python cache
+__pycache__/
+*.py[cod]
 
+# Dataset files
+*.zip
+PRSA_Data_20130301-20170228/
+
+# Virtual environments
+venv/
+.venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
